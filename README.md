@@ -16,15 +16,11 @@ A utility-driven Android app that identifies any physical product from a photo a
 
 </div>
 
----
-
 ## Overview
 
 SnapShop bridges the gap between **physical observation** and **online purchasing**. When you encounter a product you can't name - a specialized tool, a hardware component, an interesting gadget - SnapShop automates the entire pipeline from raw image capture to actionable purchase results.
 
 No guessing. No scrolling through irrelevant search results. Just point, snap, and shop.
-
----
 
 ## How It Works
 
@@ -40,8 +36,6 @@ No guessing. No scrolling through irrelevant search results. Just point, snap, a
 4. **Visual Analysis** - SerpAPI's Google Lens endpoint extracts the top 5 matching product title candidates
 5. **Query Distillation** - Gemini Flash-Lite filters clutter, translates foreign terms, and outputs a single optimized English product name
 6. **Market Indexing** - The refined query hits SerpAPI Google Shopping to return live store links, names, and active pricing
-
----
 
 ## Features
 
@@ -59,8 +53,6 @@ No guessing. No scrolling through irrelevant search results. Just point, snap, a
 | 💾 Local History & Caching | SQLite stores every scan result for instant offline access, shielding expensive API quota |
 | 🔐 User Authentication | Firebase Auth handles secure sign-up, sign-in, and session state |
 | ☁️ Cloud Synchronization | Cloud Firestore backs up scan history across devices automatically |
-
----
 
 ## Tech Stack
 
@@ -86,13 +78,9 @@ No guessing. No scrolling through irrelevant search results. Just point, snap, a
 - **Firebase Authentication** - Account lifecycle and credential management
 - **Cloud Firestore** - Scalable remote backup and cross-device sync
 
----
-
 ## Architecture
 
 SnapShop follows **Clean Architecture** principles with clear separation across data, domain, and presentation layers - ensuring testability, scalability, and maintainability throughout the development lifecycle.
-
----
 
 ## Project Structure
 
@@ -122,8 +110,6 @@ snapshop/
 
 > Every team member is responsible for implementing the full application. Role designations reflect areas of primary expertise and review responsibility - not exclusive ownership.
 
----
-
 ## Feature Prioritization
 
 **Tier 1 - Core Identification Pipeline** *(Highest Priority)*
@@ -135,15 +121,11 @@ SQLite caching → Firebase Authentication → Cloud Firestore sync
 **Tier 3 - Deployment & Administrative Tooling** *(Lowest Priority)*
 Repository documentation, Clean Architecture packaging, and dependency injection module write-up
 
----
-
 ## Target Audience
 
 - **Technicians & Engineers** - Quickly identify and source specific mechanical parts or electronics on-site
 - **General Consumers** - Spot interesting gadgets or goods and check pricing and availability instantly
 - **DIY Enthusiasts** - Identify hardware and materials without knowing the exact industry name
-
----
 
 <div align="center">
 
