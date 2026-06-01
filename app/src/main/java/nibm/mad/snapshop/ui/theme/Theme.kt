@@ -8,9 +8,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
+    primary = Primary,
     secondary = PurpleGrey40,
-    tertiary = Pink40
+    tertiary = DangerRed
 )
 
 @Composable
