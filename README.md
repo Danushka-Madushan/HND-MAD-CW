@@ -23,9 +23,9 @@ SnapShop bridges the gap between **physical observation** and **online purchasin
 No guessing. No scrolling through irrelevant search results. Just point, snap, and shop.
 
 ## How It Works
-
+<div align="center">
 ![SnapShop System Architecture](https://raw.githubusercontent.com/Danushka-Madushan/HND-MAD-CW/refs/heads/master/docs/mab-system-architecture.png)
-
+</div>
 1. **Capture** - Aim the in-app camera at any item and tap the shutter
 2. **Crop** - Google ML Kit Object Detection isolates the subject and removes background noise on-device
 3. **Upload** - The clean cropped image is uploaded to Imgbb to generate a public CDN URL
