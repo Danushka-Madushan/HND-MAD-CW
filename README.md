@@ -24,11 +24,7 @@ No guessing. No scrolling through irrelevant search results. Just point, snap, a
 
 ## How It Works
 
-```
-📷 Capture  →  🤖 ML Kit Crop  →  ☁️ Imgbb CDN  →  🔍 SerpAPI Lens
-                                                            ↓
-🛒 Shopping Results  ←  🛍️ SerpAPI Shopping  ←  ✨ Gemini Distillation
-```
+![SnapShop System Architecture](https://raw.githubusercontent.com/Danushka-Madushan/HND-MAD-CW/refs/heads/master/docs/mab-system-architecture.png)
 
 1. **Capture** - Aim the in-app camera at any item and tap the shutter
 2. **Crop** - Google ML Kit Object Detection isolates the subject and removes background noise on-device
