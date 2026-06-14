@@ -3,11 +3,11 @@ name: Build and Sign Android Release APK
 on:
   push:
     tags:
-      - 'v*.*.*'        # Triggers on semantic version tags, e.g. v1.2.0
-  workflow_dispatch:     # Allows manual trigger from the Actions tab
+      - 'v*.*.*'
+  workflow_dispatch:
 
 permissions:
-  contents: write        # Required to create GitHub Releases
+  contents: write
 
 jobs:
   build:
@@ -24,13 +24,21 @@ jobs:
           distribution: 'temurin'
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v6   # v4 — smarter build caching than v3
+        uses: gradle/actions/setup-gradle@v6
 
       - name: Grant Execute Permission for Gradlew
         run: chmod +x gradlew
 
       - name: Build Release APK
         run: ./gradlew assembleRelease --no-daemon
+
+      # Auto-detect the newest build-tools version installed on the runner.
+      # This avoids hardcoding a version that may disappear in future runner images.
+      - name: Detect Android Build Tools Version
+        run: |
+          BT=$(ls /usr/local/lib/android/sdk/build-tools/ | sort -V | tail -1)
+          echo "Detected build-tools: $BT"
+          echo "BUILD_TOOLS_VERSION=$BT" >> $GITHUB_ENV
 
       - name: Sign Release APK
         uses: r0adkll/sign-android-release@v1
@@ -41,6 +49,8 @@ jobs:
           alias: ${{ secrets.KEY_ALIAS }}
           keyStorePassword: ${{ secrets.KEYSTORE_PASSWORD }}
           keyPassword: ${{ secrets.KEY_PASSWORD }}
+        env:
+          BUILD_TOOLS_VERSION: ${{ env.BUILD_TOOLS_VERSION }}
 
       - name: Resolve Version Name
         id: version
