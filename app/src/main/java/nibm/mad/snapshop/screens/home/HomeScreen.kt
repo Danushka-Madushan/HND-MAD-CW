@@ -5,16 +5,20 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
 import nibm.mad.snapshop.composables.BottomNavigationBar
 import nibm.mad.snapshop.composables.BottomNavScaffold
 import nibm.mad.snapshop.composables.ProductDetailsKey
+import nibm.mad.snapshop.screens.auth.AuthSyncScreen
 import nibm.mad.snapshop.screens.history.HistoryScreen
 
 import nibm.mad.snapshop.screens.settings.SettingsScreen
 import nibm.mad.snapshop.screens.main.MainScreen
+import nibm.mad.snapshop.screens.permissions.CameraPermissionScreen
+import nibm.mad.snapshop.screens.permissions.MediaPermissionScreen
 
 @Composable
 fun HomeScreen() {
@@ -73,4 +77,10 @@ fun HomeScreen() {
             }
         )
     }
+}
+
+@Preview
+@Composable
+fun HomeScreenPreview() {
+    HomeScreen()
 }
