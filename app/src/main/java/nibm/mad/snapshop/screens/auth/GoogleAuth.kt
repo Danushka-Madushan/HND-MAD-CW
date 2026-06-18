@@ -1,15 +1,17 @@
-package nibm.mad.snapshop.screens.permissions.presentation
+package nibm.mad.snapshop.screens.auth
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -30,7 +32,7 @@ import nibm.mad.snapshop.ui.theme.TextDark
 import nibm.mad.snapshop.ui.theme.TextSecondary
 
 @Composable
-fun CameraPermissionScreen(
+fun AuthSyncScreen(
     onAllowClicked: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -50,8 +52,8 @@ fun CameraPermissionScreen(
             Spacer(modifier = Modifier.height(56.dp))
 
             Image(
-                painter = painterResource(id = R.drawable.camera_permission_icon),
-                contentDescription = "Camera Permission Required Graphic",
+                painter = painterResource(id = R.drawable.sync_permission_icon),
+                contentDescription = "Sync Permission Required Graphic",
                 modifier = Modifier.size(280.dp)
             )
 
@@ -63,7 +65,7 @@ fun CameraPermissionScreen(
                     .weight(1f)
             ) {
                 Text(
-                    text = "Allow Camera",
+                    text = "Cloud Sync",
                     color = TextDark,
                     fontSize = 26.sp,
                     fontWeight = FontWeight.Bold,
@@ -73,7 +75,7 @@ fun CameraPermissionScreen(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
-                    text = "Please provide us access to\nyour camera, which is required to\nSnap a photo",
+                    text = "If you want to sync your history\nacross devices, you can easily\ncreate a free account",
                     color = TextSecondary,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Normal,
@@ -91,9 +93,35 @@ fun CameraPermissionScreen(
                     .height(56.dp)
                     .padding(bottom = 8.dp)
             ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.google_icon),
+                        contentDescription = "Google Logo",
+                        modifier = Modifier.size(32.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Continue with Google",
+                        color = Color.White,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+            }
+            Button(
+                onClick = onAllowClicked,
+                colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+                    .padding(bottom = 8.dp)
+            ) {
                 Text(
-                    text = "Allow",
-                    color = Color.White,
+                    text = "Skip",
+                    color = TextSecondary,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.SemiBold
                 )
@@ -104,6 +132,6 @@ fun CameraPermissionScreen(
 
 @Preview
 @Composable
-fun CameraPermissionScreenPreview() {
-    CameraPermissionScreen({})
+fun AuthSyncScreenPreview() {
+    AuthSyncScreen({})
 }

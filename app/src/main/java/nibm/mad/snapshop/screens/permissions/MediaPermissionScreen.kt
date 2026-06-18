@@ -1,4 +1,4 @@
-package nibm.mad.snapshop.screens.permissions.presentation
+package nibm.mad.snapshop.screens.permissions
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
