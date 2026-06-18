@@ -21,8 +21,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -37,6 +39,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -49,20 +52,23 @@ import java.io.File
 import java.util.concurrent.Executor
 
 @Composable
-fun MainScreen() {
+fun MainScreen(
+    onNavigate: (String) -> Unit = {}
+) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
+    val isInspection = LocalInspectionMode.current
 
-    // --- State Management ---
     var hasCameraPermission by remember {
         mutableStateOf(
-            ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
+            if (isInspection) true else
+                ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
         )
     }
+
     var isFlashOn by remember { mutableStateOf(false) }
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
 
-    // --- Launchers ---
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
         onResult = { granted -> hasCameraPermission = granted }
@@ -78,11 +84,12 @@ fun MainScreen() {
         }
     )
 
-    // --- Camera Controller ---
     val cameraController = remember {
-        LifecycleCameraController(context).apply {
-            setEnabledUseCases(CameraController.IMAGE_CAPTURE)
-        }
+        if (!isInspection) {
+            LifecycleCameraController(context).apply {
+                setEnabledUseCases(CameraController.IMAGE_CAPTURE)
+            }
+        } else null
     }
 
     // Request permission on start if not granted
@@ -94,24 +101,34 @@ fun MainScreen() {
 
     // Toggle Flashlight
     LaunchedEffect(isFlashOn) {
-        cameraController.enableTorch(isFlashOn)
+        cameraController?.enableTorch(isFlashOn)
     }
-
-    // --- UI Layout ---
+    
     if (hasCameraPermission) {
         Box(modifier = Modifier.fillMaxSize()) {
 
             // 1. Camera Preview (Full Screen Background)
-            AndroidView(
-                modifier = Modifier.fillMaxSize(),
-                factory = { ctx ->
-                    PreviewView(ctx).apply {
-                        scaleType = PreviewView.ScaleType.FILL_CENTER
-                        controller = cameraController
-                        cameraController.bindToLifecycle(lifecycleOwner)
+            if (cameraController != null) {
+                AndroidView(
+                    modifier = Modifier.fillMaxSize(),
+                    factory = { ctx ->
+                        PreviewView(ctx).apply {
+                            scaleType = PreviewView.ScaleType.FILL_CENTER
+                            controller = cameraController
+                            cameraController.bindToLifecycle(lifecycleOwner)
+                        }
                     }
+                )
+            } else {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("Camera Preview Placeholder", color = Color.White)
                 }
-            )
+            }
 
             // 2. Scanner Frame Overlay (Centered)
             Image(
@@ -123,20 +140,59 @@ fun MainScreen() {
                     .aspectRatio(1f) // Assumes a square frame
             )
 
-            // 3. Top Controls (Flash Toggle)
-            IconButton(
-                onClick = { isFlashOn = !isFlashOn },
+            // 3. Top Controls (History - Flash - Settings)
+            Row(
                 modifier = Modifier
                     .align(Alignment.TopCenter)
-                    .padding(top = 48.dp) // Push down from status bar
-                    .size(48.dp)
-                    .background(Color.Black.copy(alpha = 0.4f), CircleShape)
+                    .fillMaxWidth()
+                    .statusBarsPadding()
+                    .padding(top = 16.dp, start = 32.dp, end = 32.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.flash_icon),
-                    contentDescription = "Toggle Flash",
-                    tint = if (isFlashOn) Color.Yellow else Color.White
-                )
+                // History (top-left)
+                IconButton(
+                    onClick = { onNavigate("history") },
+                    modifier = Modifier
+                        .size(32.dp)
+                        .background(Color.Black.copy(alpha = 0.4f), CircleShape)
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_history),
+                        contentDescription = "History",
+                        tint = Color.White,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+
+                // Flash (top-center)
+                IconButton(
+                    onClick = { isFlashOn = !isFlashOn },
+                    modifier = Modifier
+                        .size(32.dp)
+                        .background(Color.Black.copy(alpha = 0.4f), CircleShape)
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.flash_icon),
+                        contentDescription = "Toggle Flash",
+                        tint = if (isFlashOn) Color.Yellow else Color.White
+                    )
+                }
+
+                // Settings (top-right)
+                IconButton(
+                    onClick = { onNavigate("settings") },
+                    modifier = Modifier
+                        .size(32.dp)
+                        .background(Color.Black.copy(alpha = 0.4f), CircleShape)
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_settings),
+                        contentDescription = "Settings",
+                        tint = Color.White,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
             }
 
             // 4. Bottom Controls (Gallery & Shutter)
@@ -144,6 +200,7 @@ fun MainScreen() {
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .fillMaxWidth()
+                    .navigationBarsPadding()
                     .padding(bottom = 48.dp, start = 32.dp, end = 32.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
@@ -170,14 +227,16 @@ fun MainScreen() {
                 // Center: Animated Shutter Button
                 AnimatedShutterButton(
                     onClick = {
-                        takePhoto(
-                            controller = cameraController,
-                            executor = ContextCompat.getMainExecutor(context),
-                            onPhotoTaken = { uri ->
-                                // TODO: Handle the taken photo URI (e.g., navigate to results)
-                                Log.d("Camera", "Photo saved: $uri")
-                            }
-                        )
+                        cameraController?.let { controller ->
+                            takePhoto(
+                                controller = controller,
+                                executor = ContextCompat.getMainExecutor(context),
+                                onPhotoTaken = { uri ->
+                                    // TODO: Handle the taken photo URI (e.g., navigate to results)
+                                    Log.d("Camera", "Photo saved: $uri")
+                                }
+                            )
+                        }
                     }
                 )
 
@@ -220,5 +279,5 @@ private fun takePhoto(
 @Preview
 @Composable
 fun MainScreenPreview() {
-    MainScreen()
+    MainScreen {}
 }
