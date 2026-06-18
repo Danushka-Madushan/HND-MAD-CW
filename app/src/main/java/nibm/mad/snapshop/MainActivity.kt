@@ -14,8 +14,10 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
 import nibm.mad.snapshop.data.NavRoutes
+import nibm.mad.snapshop.screens.auth.AuthSyncScreen
 import nibm.mad.snapshop.screens.history.HistoryScreen
 import nibm.mad.snapshop.screens.main.MainScreen
+import nibm.mad.snapshop.screens.permissions.CameraPermissionScreen
 import nibm.mad.snapshop.screens.settings.SettingsScreen
 import nibm.mad.snapshop.ui.theme.SnapShopTheme
 
@@ -65,11 +67,11 @@ fun AppNavHost() {
             }
 
             entry<NavRoutes.Settings> {
-                SettingsScreen()
+                AuthSyncScreen({})
             }
 
             entry<NavRoutes.History> {
-                HistoryScreen()
+                CameraPermissionScreen({})
             }
         }
     )

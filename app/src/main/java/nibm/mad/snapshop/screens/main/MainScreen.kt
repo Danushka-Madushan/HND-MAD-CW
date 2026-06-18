@@ -16,6 +16,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -130,118 +131,125 @@ fun MainScreen(
                 }
             }
 
-            // 2. Scanner Frame Overlay (Centered)
-            Image(
-                painter = painterResource(id = R.drawable.scanner_frame),
-                contentDescription = "Scanner Frame",
-                modifier = Modifier
-                    .align(Alignment.Center)
-                    .fillMaxWidth(0.8f) // Adjust width to fit nicely on screen
-                    .aspectRatio(1f) // Assumes a square frame
-            )
-
-            // 3. Top Controls (History - Flash - Settings)
-            Row(
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .fillMaxWidth()
-                    .statusBarsPadding()
-                    .padding(top = 16.dp, start = 32.dp, end = 32.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // History (top-left)
-                IconButton(
-                    onClick = { onNavigate("history") },
+            // UI Overlay
+            Column(modifier = Modifier.fillMaxSize()) {
+                // 3. Top Controls (History - Flash - Settings)
+                Row(
                     modifier = Modifier
-                        .size(32.dp)
-                        .background(Color.Black.copy(alpha = 0.4f), CircleShape)
+                        .fillMaxWidth()
+                        .statusBarsPadding()
+                        .padding(top = 20.dp, start = 32.dp, end = 32.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_history),
-                        contentDescription = "History",
-                        tint = Color.White,
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
-
-                // Flash (top-center)
-                IconButton(
-                    onClick = { isFlashOn = !isFlashOn },
-                    modifier = Modifier
-                        .size(32.dp)
-                        .background(Color.Black.copy(alpha = 0.4f), CircleShape)
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.flash_icon),
-                        contentDescription = "Toggle Flash",
-                        tint = if (isFlashOn) Color.Yellow else Color.White
-                    )
-                }
-
-                // Settings (top-right)
-                IconButton(
-                    onClick = { onNavigate("settings") },
-                    modifier = Modifier
-                        .size(32.dp)
-                        .background(Color.Black.copy(alpha = 0.4f), CircleShape)
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_settings),
-                        contentDescription = "Settings",
-                        tint = Color.White,
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
-            }
-
-            // 4. Bottom Controls (Gallery & Shutter)
-            Row(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .fillMaxWidth()
-                    .navigationBarsPadding()
-                    .padding(bottom = 48.dp, start = 32.dp, end = 32.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-
-                // Left: Pick Image from Gallery
-                IconButton(
-                    onClick = {
-                        photoPickerLauncher.launch(
-                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                    // History (top-left)
+                    IconButton(
+                        onClick = { onNavigate("history") },
+                        modifier = Modifier
+                            .size(32.dp)
+                            .background(Color.Black.copy(alpha = 0.4f), CircleShape)
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_history),
+                            contentDescription = "History",
+                            tint = Color.White,
+                            modifier = Modifier.size(24.dp)
                         )
-                    },
+                    }
+
+                    // Flash (top-center)
+                    IconButton(
+                        onClick = { isFlashOn = !isFlashOn },
+                        modifier = Modifier
+                            .size(32.dp)
+                            .background(Color.Black.copy(alpha = 0.4f), CircleShape)
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.flash_icon),
+                            contentDescription = "Toggle Flash",
+                            tint = if (isFlashOn) Color.Yellow else Color.White
+                        )
+                    }
+
+                    // Settings (top-right)
+                    IconButton(
+                        onClick = { onNavigate("settings") },
+                        modifier = Modifier
+                            .size(32.dp)
+                            .background(Color.Black.copy(alpha = 0.4f), CircleShape)
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_settings),
+                            contentDescription = "Settings",
+                            tint = Color.White,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+                }
+
+                // 2. Scanner Frame Overlay (Weighted to Center Visually)
+                Box(
                     modifier = Modifier
-                        .size(56.dp)
-                        .background(Color.Black.copy(alpha = 0.4f), CircleShape)
+                        .weight(1f)
+                        .fillMaxWidth(),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.pick_image_icon),
-                        contentDescription = "Pick Image",
-                        tint = Color.White
+                    Image(
+                        painter = painterResource(id = R.drawable.scanner_frame),
+                        contentDescription = "Scanner Frame",
+                        modifier = Modifier
+                            .fillMaxWidth(0.8f) // Adjust width to fit nicely on screen
+                            .aspectRatio(1f) // Assumes a square frame
                     )
                 }
 
-                // Center: Animated Shutter Button
-                AnimatedShutterButton(
-                    onClick = {
-                        cameraController?.let { controller ->
-                            takePhoto(
-                                controller = controller,
-                                executor = ContextCompat.getMainExecutor(context),
-                                onPhotoTaken = { uri ->
-                                    // TODO: Handle the taken photo URI (e.g., navigate to results)
-                                    Log.d("Camera", "Photo saved: $uri")
-                                }
-                            )
-                        }
-                    }
-                )
+                // 4. Bottom Controls (Gallery & Shutter)
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .navigationBarsPadding()
+                        .padding(bottom = 48.dp, start = 32.dp, end = 32.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
 
-                // Right: Empty spacer to keep the shutter perfectly centered
-                Spacer(modifier = Modifier.size(56.dp))
+                    // Left: Pick Image from Gallery
+                    IconButton(
+                        onClick = {
+                            photoPickerLauncher.launch(
+                                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                            )
+                        },
+                        modifier = Modifier
+                            .size(56.dp)
+                            .background(Color.Black.copy(alpha = 0.4f), CircleShape)
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.pick_image_icon),
+                            contentDescription = "Pick Image",
+                            tint = Color.White
+                        )
+                    }
+
+                    // Center: Animated Shutter Button
+                    AnimatedShutterButton(
+                        onClick = {
+                            cameraController?.let { controller ->
+                                takePhoto(
+                                    controller = controller,
+                                    executor = ContextCompat.getMainExecutor(context),
+                                    onPhotoTaken = { uri ->
+                                        // TODO: Handle the taken photo URI (e.g., navigate to results)
+                                        Log.d("Camera", "Photo saved: $uri")
+                                    }
+                                )
+                            }
+                        }
+                    )
+
+                    // Right: Empty spacer to keep the shutter perfectly centered
+                    Spacer(modifier = Modifier.size(56.dp))
+                }
             }
         }
     } else {
