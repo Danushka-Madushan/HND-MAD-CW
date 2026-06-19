@@ -16,5 +16,14 @@ sealed class NavRoutes(val route: String, val iconRes: Int) : NavKey {
     data object History : NavRoutes("history", R.drawable.ic_history)
 
     @Serializable
+    data object CameraPermission : NavRoutes("camera_permission", 0)
+
+    @Serializable
+    data object MediaPermission : NavRoutes("media_permission", 0)
+
+    @Serializable
+    data object GoogleAuth : NavRoutes("google_auth", 0)
+
+    @Serializable
     data class ObjectResults(val uri: String) : NavRoutes("object_results", 0)
 }

@@ -1,5 +1,6 @@
 package nibm.mad.snapshop
 
+import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -8,7 +9,12 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
@@ -19,10 +25,12 @@ import nibm.mad.snapshop.screens.history.HistoryScreen
 import nibm.mad.snapshop.screens.main.MainScreen
 import nibm.mad.snapshop.screens.main.ObjectResultsScreen
 import nibm.mad.snapshop.screens.permissions.CameraPermissionScreen
+import nibm.mad.snapshop.screens.permissions.MediaPermissionScreen
 import nibm.mad.snapshop.screens.settings.SettingsScreen
 import nibm.mad.snapshop.ui.theme.SnapShopTheme
 
 import android.os.Build
+import androidx.core.content.edit
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,8 +57,12 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun AppNavHost() {
-    // Navigation 3 back stack owned at the activity level
-    val backStack = rememberNavBackStack(NavRoutes.Main)
+    val context = LocalContext.current
+    val sharedPrefs = remember { context.getSharedPreferences("snapshop_prefs", Context.MODE_PRIVATE) }
+    var isFirstRun by remember { mutableStateOf(sharedPrefs.getBoolean("is_first_run", true)) }
+
+    val initialRoute = if (isFirstRun) NavRoutes.CameraPermission else NavRoutes.Main
+    val backStack = rememberNavBackStack(initialRoute)
 
     NavDisplay(
         backStack = backStack,
@@ -68,12 +80,33 @@ fun AppNavHost() {
                 })
             }
 
+            entry<NavRoutes.CameraPermission> {
+                CameraPermissionScreen(onAllowClicked = {
+                    backStack.add(NavRoutes.MediaPermission)
+                })
+            }
+
+            entry<NavRoutes.MediaPermission> {
+                MediaPermissionScreen(onAllowClicked = {
+                    backStack.add(NavRoutes.GoogleAuth)
+                })
+            }
+
+            entry<NavRoutes.GoogleAuth> {
+                AuthSyncScreen(onAllowClicked = {
+                    sharedPrefs.edit { putBoolean("is_first_run", false) }
+                    isFirstRun = false
+                    backStack.clear()
+                    backStack.add(NavRoutes.Main)
+                })
+            }
+
             entry<NavRoutes.Settings> {
-                AuthSyncScreen({})
+                SettingsScreen()
             }
 
             entry<NavRoutes.History> {
-                CameraPermissionScreen({})
+                HistoryScreen()
             }
 
             entry<NavRoutes.ObjectResults> { key ->
