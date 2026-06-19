@@ -1,8 +1,12 @@
 package nibm.mad.snapshop.screens.permissions
 
+import android.Manifest
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -41,6 +45,21 @@ fun CameraPermissionScreen(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { isGranted ->
+            if (isGranted) {
+                onAllowClicked()
+            } else {
+                Toast.makeText(
+                    context,
+                    "Camera permission is required to continue",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+    )
 
     LaunchedEffect(Unit) {
         (context as? ComponentActivity)?.enableEdgeToEdge(
@@ -103,7 +122,7 @@ fun CameraPermissionScreen(
             }
 
             Button(
-                onClick = onAllowClicked,
+                onClick = { permissionLauncher.launch(Manifest.permission.CAMERA) },
                 colors = ButtonDefaults.buttonColors(containerColor = BrandBlue),
                 shape = RoundedCornerShape(34),
                 modifier = Modifier
