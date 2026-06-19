@@ -22,7 +22,7 @@ import java.util.concurrent.TimeUnit
  */
 suspend fun searchImageWithSerpApi(
     imageUrl: String,
-    apiKey: String = "3a58c91a238bf0fd0b99a8e70a2cd3fd2a4215afeeb3084a115aaccbb48c9b99"
+    apiKey: String = nibm.mad.snapshop.BuildConfig.SERPAPI_API_KEY
 ): List<ProductMatch> = withContext(Dispatchers.IO) {
     try {
         val client = OkHttpClient.Builder()

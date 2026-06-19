@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit
 suspend fun uploadImageToImgBB(
     context: Context,
     imageUri: Uri,
-    apiKey: String = "" // Replace with your actual ImgBB API Key
+    apiKey: String = nibm.mad.snapshop.BuildConfig.IMGBB_API_KEY
 ): String? = withContext(Dispatchers.IO) {
     try {
         // 1. Resolve and open the local image stream to read raw bytes
