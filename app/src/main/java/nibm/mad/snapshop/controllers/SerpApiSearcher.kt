@@ -7,6 +7,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import nibm.mad.snapshop.BuildConfig
 import nibm.mad.snapshop.models.ProductMatch
 import okhttp3.HttpUrl
 import okhttp3.OkHttpClient
@@ -22,7 +23,7 @@ import java.util.concurrent.TimeUnit
  */
 suspend fun searchImageWithSerpApi(
     imageUrl: String,
-    apiKey: String = nibm.mad.snapshop.BuildConfig.SERPAPI_API_KEY
+    apiKey: String = BuildConfig.SERPAPI_API_KEY
 ): List<ProductMatch> = withContext(Dispatchers.IO) {
     try {
         val client = OkHttpClient.Builder()

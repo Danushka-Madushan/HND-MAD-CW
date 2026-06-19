@@ -7,6 +7,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import nibm.mad.snapshop.BuildConfig
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
@@ -23,7 +24,7 @@ import java.util.concurrent.TimeUnit
 suspend fun uploadImageToImgBB(
     context: Context,
     imageUri: Uri,
-    apiKey: String = nibm.mad.snapshop.BuildConfig.IMGBB_API_KEY
+    apiKey: String = BuildConfig.IMGBB_API_KEY
 ): String? = withContext(Dispatchers.IO) {
     try {
         // 1. Resolve and open the local image stream to read raw bytes

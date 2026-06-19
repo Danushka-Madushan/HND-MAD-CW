@@ -19,6 +19,7 @@ android {
 
         buildConfigField("String", "IMGBB_API_KEY", "\"\"")
         buildConfigField("String", "SERPAPI_API_KEY", "\"\"")
+        buildConfigField("String", "GEMINI_API_KEY", "\"\"")
     }
 
     buildFeatures {

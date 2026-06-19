@@ -1,6 +1,7 @@
 package nibm.mad.snapshop.controllers
 
 import android.util.Log
+import nibm.mad.snapshop.BuildConfig
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.*
@@ -20,7 +21,7 @@ import java.util.concurrent.TimeUnit
  */
 suspend fun distillProductQuery(
     top5Titles: List<String>,
-    apiKey: String = "", // Your Gemini API Key
+    apiKey: String = BuildConfig.GEMINI_API_KEY,
     modelName: String = "gemini-3.1-flash-lite" // Recommended robust model for structured text processing
 ): String? = withContext(Dispatchers.IO) {
     try {

@@ -30,6 +30,7 @@ jobs:
         run: |
           echo "IMGBB_API_KEY=${{ secrets.IMGBB_API_KEY }}" >> local.properties
           echo "SERPAPI_API_KEY=${{ secrets.SERPAPI_API_KEY }}" >> local.properties
+          echo "SERPAPI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> local.properties
 
       - name: Grant Execute Permission for Gradlew
         run: chmod +x gradlew
