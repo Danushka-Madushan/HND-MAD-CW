@@ -54,6 +54,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import kotlinx.coroutines.launch
 import nibm.mad.snapshop.R
 import nibm.mad.snapshop.composables.AnimatedShutterButton
+import nibm.mad.snapshop.composables.CameraPermissionRequest
 import nibm.mad.snapshop.composables.ScanningOverlay
 import nibm.mad.snapshop.controllers.extractMainObject
 import nibm.mad.snapshop.data.NavRoutes
@@ -295,8 +296,8 @@ fun MainScreen(
             }
         }
     } else {
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text("Camera permission is required to use this feature.")
+        CameraPermissionRequest {
+            permissionLauncher.launch(Manifest.permission.CAMERA)
         }
     }
 }
