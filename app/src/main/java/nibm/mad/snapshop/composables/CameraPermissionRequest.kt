@@ -17,9 +17,7 @@ import nibm.mad.snapshop.ui.theme.TextDark
 import nibm.mad.snapshop.ui.theme.TextSecondary
 
 @Composable
-fun CameraPermissionRequest(
-    onAllowClicked: () -> Unit
-) {
+fun CameraPermissionRequest() {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
@@ -48,5 +46,5 @@ fun CameraPermissionRequest(
 @Preview
 @Composable
 fun CameraPermissionRequestPreview() {
-    CameraPermissionRequest {}
+    CameraPermissionRequest()
 }

@@ -296,9 +296,7 @@ fun MainScreen(
             }
         }
     } else {
-        CameraPermissionRequest {
-            permissionLauncher.launch(Manifest.permission.CAMERA)
-        }
+        CameraPermissionRequest()
     }
 }
 
