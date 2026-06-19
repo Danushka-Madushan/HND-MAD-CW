@@ -14,4 +14,7 @@ sealed class NavRoutes(val route: String, val iconRes: Int) : NavKey {
 
     @Serializable
     data object History : NavRoutes("history", R.drawable.ic_history)
+
+    @Serializable
+    data class ObjectResults(val uri: String) : NavRoutes("object_results", 0)
 }

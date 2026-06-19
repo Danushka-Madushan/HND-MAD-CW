@@ -47,18 +47,26 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
+import androidx.activity.enableEdgeToEdge
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 import nibm.mad.snapshop.R
 import nibm.mad.snapshop.composables.AnimatedShutterButton
+import nibm.mad.snapshop.controllers.extractMainObject
+import nibm.mad.snapshop.data.NavRoutes
 import java.io.File
 import java.util.concurrent.Executor
 
 @Composable
 fun MainScreen(
-    onNavigate: (String) -> Unit = {}
+    onNavigate: (NavRoutes) -> Unit = {}
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val isInspection = LocalInspectionMode.current
+    val coroutineScope = rememberCoroutineScope()
 
     var hasCameraPermission by remember {
         mutableStateOf(
@@ -79,8 +87,17 @@ fun MainScreen(
         contract = ActivityResultContracts.PickVisualMedia(),
         onResult = { uri ->
             if (uri != null) {
-                selectedImageUri = uri
-                // TODO: Handle the picked image (e.g., upload it or analyze it)
+                coroutineScope.launch {
+                    // 1. Process the image using ML Kit
+                    val croppedUri = extractMainObject(context, uri)
+
+                    if (croppedUri != null) {
+                        onNavigate(NavRoutes.ObjectResults(croppedUri.toString()))
+                    } else {
+                        // Handle case where no object was detected
+                        Log.e("ML_KIT", "No prominent object found to crop.")
+                    }
+                }
             }
         }
     )
@@ -91,6 +108,14 @@ fun MainScreen(
                 setEnabledUseCases(CameraController.IMAGE_CAPTURE)
             }
         } else null
+    }
+
+    // Configure system bars for camera (dark style for white icons)
+    LaunchedEffect(Unit) {
+        (context as? ComponentActivity)?.enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.dark(android.graphics.Color.TRANSPARENT),
+            navigationBarStyle = SystemBarStyle.dark(android.graphics.Color.TRANSPARENT)
+        )
     }
 
     // Request permission on start if not granted
@@ -144,7 +169,7 @@ fun MainScreen(
                 ) {
                     // History (top-left)
                     IconButton(
-                        onClick = { onNavigate("history") },
+                        onClick = { onNavigate(NavRoutes.History) },
                         modifier = Modifier
                             .size(32.dp)
                             .background(Color.Black.copy(alpha = 0.4f), CircleShape)
@@ -173,7 +198,7 @@ fun MainScreen(
 
                     // Settings (top-right)
                     IconButton(
-                        onClick = { onNavigate("settings") },
+                        onClick = { onNavigate(NavRoutes.Settings) },
                         modifier = Modifier
                             .size(32.dp)
                             .background(Color.Black.copy(alpha = 0.4f), CircleShape)
@@ -239,8 +264,17 @@ fun MainScreen(
                                     controller = controller,
                                     executor = ContextCompat.getMainExecutor(context),
                                     onPhotoTaken = { uri ->
-                                        // TODO: Handle the taken photo URI (e.g., navigate to results)
-                                        Log.d("Camera", "Photo saved: $uri")
+                                        coroutineScope.launch {
+                                            // 1. Process the image using ML Kit
+                                            val croppedUri = extractMainObject(context, uri)
+
+                                            if (croppedUri != null) {
+                                                onNavigate(NavRoutes.ObjectResults(croppedUri.toString()))
+                                            } else {
+                                                // Handle case where no object was detected
+                                                Log.e("ML_KIT", "No prominent object found to crop.")
+                                            }
+                                        }
                                     }
                                 )
                             }

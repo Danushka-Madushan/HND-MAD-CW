@@ -17,13 +17,19 @@ import nibm.mad.snapshop.data.NavRoutes
 import nibm.mad.snapshop.screens.auth.AuthSyncScreen
 import nibm.mad.snapshop.screens.history.HistoryScreen
 import nibm.mad.snapshop.screens.main.MainScreen
+import nibm.mad.snapshop.screens.main.ObjectResultsScreen
 import nibm.mad.snapshop.screens.permissions.CameraPermissionScreen
 import nibm.mad.snapshop.screens.settings.SettingsScreen
 import nibm.mad.snapshop.ui.theme.SnapShopTheme
 
+import android.os.Build
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            window.isNavigationBarContrastEnforced = false
+        }
         enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.light(
                 Color.TRANSPARENT, Color.TRANSPARENT
@@ -54,14 +60,10 @@ fun AppNavHost() {
         },
         entryProvider = entryProvider {
             entry<NavRoutes.Main> {
-                MainScreen(onNavigate = { routeStr ->
-                    val targetKey = when (routeStr) {
-                        NavRoutes.Settings.route -> NavRoutes.Settings
-                        NavRoutes.History.route -> NavRoutes.History
-                        else -> NavRoutes.Main
+                MainScreen(onNavigate = { targetKey ->
+                    if (targetKey is NavRoutes.Main) {
+                        backStack.clear()
                     }
-
-                    backStack.clear()
                     backStack.add(targetKey)
                 })
             }
@@ -72,6 +74,10 @@ fun AppNavHost() {
 
             entry<NavRoutes.History> {
                 CameraPermissionScreen({})
+            }
+
+            entry<NavRoutes.ObjectResults> { key ->
+                ObjectResultsScreen(croppedImageUriString = key.uri)
             }
         }
     )
