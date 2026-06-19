@@ -16,7 +16,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
@@ -67,7 +66,9 @@ private fun SearchStepTracker(currentStep: SearchStep, productCount: Int) {
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp) // Gives breathing room on the screen edges
     ) {
 
         // ── Step circles + connecting lines ──
@@ -79,11 +80,12 @@ private fun SearchStepTracker(currentStep: SearchStep, productCount: Int) {
                 val isCompleted = currentIndex > index
                 val isActive   = currentStep == step
 
-                // Animate the active circle to pulse slightly larger
-                val circleScale by animateFloatAsState(
-                    targetValue = if (isActive) 1.18f else 1f,
+                // ENHANCEMENT: Animate layout bounds dynamically via Dp instead of scaling graphics layer.
+                // This forces connecting lines to adapt cleanly without overlapping or cropping.
+                val circleSize by animateDpAsState(
+                    targetValue = if (isActive) 40.dp else 34.dp,
                     animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
-                    label = "circle_scale_$index"
+                    label = "circle_size_$index"
                 )
 
                 val bgColor by animateColorAsState(
@@ -98,8 +100,7 @@ private fun SearchStepTracker(currentStep: SearchStep, productCount: Int) {
 
                 Box(
                     modifier = Modifier
-                        .size(36.dp)
-                        .scale(circleScale)
+                        .size(circleSize)
                         .background(color = bgColor, shape = CircleShape)
                         .then(
                             if (isActive)
@@ -331,7 +332,10 @@ fun ObjectResultsContent(
                 contentScale       = ContentScale.Fit,
                 modifier           = Modifier
                     .fillMaxSize()
-                    .scale(cardScale)
+                    .graphicsLayer {
+                        scaleX = cardScale
+                        scaleY = cardScale
+                    }
                     .padding(16.dp)
             )
         }
