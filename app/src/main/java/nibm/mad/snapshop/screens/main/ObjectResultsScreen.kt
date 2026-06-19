@@ -3,16 +3,16 @@ package nibm.mad.snapshop.screens.main
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.runtime.Composable
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.scaleIn
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -20,28 +20,27 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
+import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
+import coil.compose.AsyncImage
+import nibm.mad.snapshop.R
+import nibm.mad.snapshop.ui.theme.BrandBlue
 import nibm.mad.snapshop.ui.theme.SnapShopTheme
 import nibm.mad.snapshop.ui.theme.TextDark
 
 @Composable
 fun ObjectResultsScreen(croppedImageUriString: String) {
-    // Controls the trigger for the entry animation
     var isVisible by remember { mutableStateOf(false) }
-
-    LaunchedEffect(Unit) {
-        isVisible = true // Trigger animation immediately upon entering the screen
-    }
-
-    ObjectResultsContent(
-        croppedImageUriString = croppedImageUriString,
-        isVisible = isVisible
-    )
+    LaunchedEffect(Unit) { isVisible = true }
+    ObjectResultsContent(croppedImageUriString, isVisible)
 }
 
 @Composable
@@ -62,32 +61,68 @@ fun ObjectResultsContent(
         )
     }
 
-    Box(
+    // Shared fade for header + button — graphicsLayer means layout space is always reserved,
+    // so SpaceBetween won't jump as these animate in
+    val fadeAlpha by animateFloatAsState(
+        targetValue = if (isVisible) 1f else 0f,
+        animationSpec = spring(stiffness = Spring.StiffnessLow),
+        label = "fade_alpha"
+    )
+
+    // Bouncy scale for the image card
+    val cardScale by animateFloatAsState(
+        targetValue = if (isVisible) 1f else 0.7f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessLow
+        ),
+        label = "card_scale"
+    )
+
+    Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White),
-        contentAlignment = Alignment.Center
+            .background(Color.White)
     ) {
-        AnimatedVisibility(
-            visible = isVisible,
-            enter = scaleIn(
-                // Bouncy spring effect akin to Google Lens snapping onto an object
-                animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioMediumBouncy,
-                    stiffness = Spring.StiffnessLow
-                )
-            ) + fadeIn(initialAlpha = 0f)
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.White)
+                .systemBarsPadding()
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceBetween
         ) {
+            // 1. Header — layout space held; only visually fades
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = "Snapped",
+                    color = TextDark,
+                    fontSize = 32.sp,
+                    textAlign = TextAlign.Center,
+                    fontWeight = FontWeight.Light,
+                    modifier = Modifier
+                        .padding(top = 16.dp)
+                        .graphicsLayer { alpha = fadeAlpha }
+                )
+                Icon(
+                    painter = painterResource(id = R.drawable.snap_icon),
+                    contentDescription = "SnapIcon",
+                    tint = BrandBlue.copy(alpha = 0.9f),
+                    modifier = Modifier.size(64.dp)
+                )
+            }
+
+            // 2. Image card — scale + fade via graphicsLayer
             Box(
                 modifier = Modifier
-                    .fillMaxWidth(0.85f)
-                    .aspectRatio(1f) // Keep it proportional, or let it wrap content
-                    .shadow(24.dp, RoundedCornerShape(24.dp))
-                    .clip(RoundedCornerShape(24.dp))
-                    .border(2.dp, Color.White.copy(alpha = 0.5f), RoundedCornerShape(24.dp))
-                    .background(Color.White)
+                    .weight(1f)
+                    .fillMaxWidth(),
+                contentAlignment = Alignment.Center
             ) {
-                // Coil's AsyncImage handles loading the local file Uri smoothly
                 AsyncImage(
                     model = croppedImageUriString.toUri(),
                     contentDescription = "Cropped Object",
@@ -97,17 +132,22 @@ fun ObjectResultsContent(
                         .padding(16.dp)
                 )
             }
-        }
 
-        // Placeholder for future action buttons
-        if (isVisible) {
-            Text(
-                text = "Ready for processing...",
-                color = TextDark.copy(alpha = 0.7f),
+            Button(
+                onClick = {  },
+                colors = ButtonDefaults.buttonColors(containerColor = BrandBlue),
+                shape = RoundedCornerShape(34),
                 modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(bottom = 64.dp)
-            )
+                    .padding(bottom = 24.dp)
+                    .height(56.dp)
+            ) {
+                Text(
+                    text = "Search",
+                    color = Color.White,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
         }
     }
 }
