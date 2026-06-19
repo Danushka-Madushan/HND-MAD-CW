@@ -84,14 +84,9 @@ suspend fun extractMainObject(context: Context, sourceUri: Uri): Uri? = withCont
  * Mutable is required so that [InputImage.fromBitmap] and [Bitmap.createBitmap] work correctly.
  */
 private fun loadBitmap(context: Context, uri: Uri): Bitmap? = try {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-        val source = ImageDecoder.createSource(context.contentResolver, uri)
-        ImageDecoder.decodeBitmap(source) { decoder, _, _ ->
-            decoder.isMutableRequired = true   // forces software (ARGB_8888) — never hardware
-        }
-    } else {
-        @Suppress("DEPRECATION")
-        MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
+    val source = ImageDecoder.createSource(context.contentResolver, uri)
+    ImageDecoder.decodeBitmap(source) { decoder, _, _ ->
+        decoder.isMutableRequired = true   // forces software (ARGB_8888) — never hardware
     }
 } catch (e: Exception) {
     e.printStackTrace()

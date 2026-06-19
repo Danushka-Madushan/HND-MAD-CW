@@ -4,7 +4,10 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.util.Log
+import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.ImageCapture
@@ -35,6 +38,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -47,13 +51,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import androidx.activity.ComponentActivity
-import androidx.activity.SystemBarStyle
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
 import nibm.mad.snapshop.R
 import nibm.mad.snapshop.composables.AnimatedShutterButton
+import nibm.mad.snapshop.composables.ScanningOverlay
 import nibm.mad.snapshop.controllers.extractMainObject
 import nibm.mad.snapshop.data.NavRoutes
 import java.io.File
@@ -76,6 +77,7 @@ fun MainScreen(
     }
 
     var isFlashOn by remember { mutableStateOf(false) }
+    var isProcessing by remember { mutableStateOf(false) }
 
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
@@ -87,14 +89,16 @@ fun MainScreen(
         onResult = { uri ->
             if (uri != null) {
                 coroutineScope.launch {
-                    // 1. Process the image using ML Kit
-                    val croppedUri = extractMainObject(context, uri)
-
-                    if (croppedUri != null) {
-                        onNavigate(NavRoutes.ObjectResults(croppedUri.toString()))
-                    } else {
-                        // Handle case where no object was detected
-                        Log.e("ML_KIT", "No prominent object found to crop.")
+                    isProcessing = true
+                    try {
+                        val croppedUri = extractMainObject(context, uri)
+                        if (croppedUri != null) {
+                            onNavigate(NavRoutes.ObjectResults(croppedUri.toString()))
+                        } else {
+                            Log.e("ML_KIT", "No prominent object found to crop.")
+                        }
+                    } finally {
+                        isProcessing = false
                     }
                 }
             }
@@ -109,7 +113,6 @@ fun MainScreen(
         } else null
     }
 
-    // Configure system bars for camera (dark style for white icons)
     LaunchedEffect(Unit) {
         (context as? ComponentActivity)?.enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.dark(android.graphics.Color.TRANSPARENT),
@@ -117,22 +120,20 @@ fun MainScreen(
         )
     }
 
-    // Request permission on start if not granted
     LaunchedEffect(Unit) {
         if (!hasCameraPermission) {
             permissionLauncher.launch(Manifest.permission.CAMERA)
         }
     }
 
-    // Toggle Flashlight
     LaunchedEffect(isFlashOn) {
         cameraController?.enableTorch(isFlashOn)
     }
-    
+
     if (hasCameraPermission) {
         Box(modifier = Modifier.fillMaxSize()) {
 
-            // 1. Camera Preview (Full Screen Background)
+            // Camera Preview (Full Screen Background)
             if (cameraController != null) {
                 AndroidView(
                     modifier = Modifier.fillMaxSize(),
@@ -157,7 +158,7 @@ fun MainScreen(
 
             // UI Overlay
             Column(modifier = Modifier.fillMaxSize()) {
-                // 3. Top Controls (History - Flash - Settings)
+                // Top Controls (History - Flash - Settings)
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -166,9 +167,9 @@ fun MainScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // History (top-left)
                     IconButton(
                         onClick = { onNavigate(NavRoutes.History) },
+                        enabled = !isProcessing,
                         modifier = Modifier
                             .size(32.dp)
                             .background(Color.Black.copy(alpha = 0.4f), CircleShape)
@@ -181,9 +182,9 @@ fun MainScreen(
                         )
                     }
 
-                    // Flash (top-center)
                     IconButton(
                         onClick = { isFlashOn = !isFlashOn },
+                        enabled = !isProcessing,
                         modifier = Modifier
                             .size(32.dp)
                             .background(Color.Black.copy(alpha = 0.4f), CircleShape)
@@ -195,9 +196,9 @@ fun MainScreen(
                         )
                     }
 
-                    // Settings (top-right)
                     IconButton(
                         onClick = { onNavigate(NavRoutes.Settings) },
+                        enabled = !isProcessing,
                         modifier = Modifier
                             .size(32.dp)
                             .background(Color.Black.copy(alpha = 0.4f), CircleShape)
@@ -211,7 +212,7 @@ fun MainScreen(
                     }
                 }
 
-                // 2. Scanner Frame Overlay (Weighted to Center Visually)
+                // Scanner Frame Overlay
                 Box(
                     modifier = Modifier
                         .weight(1f)
@@ -222,12 +223,12 @@ fun MainScreen(
                         painter = painterResource(id = R.drawable.scanner_frame),
                         contentDescription = "Scanner Frame",
                         modifier = Modifier
-                            .fillMaxWidth(0.8f) // Adjust width to fit nicely on screen
-                            .aspectRatio(1f) // Assumes a square frame
+                            .fillMaxWidth(0.8f)
+                            .aspectRatio(1f)
                     )
                 }
 
-                // 4. Bottom Controls (Gallery & Shutter)
+                // Bottom Controls (Gallery & Shutter)
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -236,14 +237,13 @@ fun MainScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-
-                    // Left: Pick Image from Gallery
                     IconButton(
                         onClick = {
                             photoPickerLauncher.launch(
                                 PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
                             )
                         },
+                        enabled = !isProcessing,
                         modifier = Modifier
                             .size(56.dp)
                             .background(Color.Black.copy(alpha = 0.4f), CircleShape)
@@ -255,50 +255,59 @@ fun MainScreen(
                         )
                     }
 
-                    // Center: Animated Shutter Button
                     AnimatedShutterButton(
                         onClick = {
-                            cameraController?.let { controller ->
-                                takePhoto(
-                                    controller = controller,
-                                    executor = ContextCompat.getMainExecutor(context),
-                                    onPhotoTaken = { uri ->
-                                        coroutineScope.launch {
-                                            // 1. Process the image using ML Kit
-                                            val croppedUri = extractMainObject(context, uri)
-
-                                            if (croppedUri != null) {
-                                                onNavigate(NavRoutes.ObjectResults(croppedUri.toString()))
-                                            } else {
-                                                // Handle case where no object was detected
-                                                Log.e("ML_KIT", "No prominent object found to crop.")
+                            // Guard against double-triggers since AnimatedShutterButton
+                            // may not expose an enabled parameter
+                            if (!isProcessing) {
+                                cameraController?.let { controller ->
+                                    takePhoto(
+                                        controller = controller,
+                                        executor = ContextCompat.getMainExecutor(context),
+                                        onPhotoTaken = { uri ->
+                                            coroutineScope.launch {
+                                                isProcessing = true
+                                                try {
+                                                    val croppedUri = extractMainObject(context, uri)
+                                                    if (croppedUri != null) {
+                                                        onNavigate(NavRoutes.ObjectResults(croppedUri.toString()))
+                                                    } else {
+                                                        Log.e("ML_KIT", "No prominent object found to crop.")
+                                                    }
+                                                } finally {
+                                                    isProcessing = false
+                                                }
                                             }
                                         }
-                                    }
-                                )
+                                    )
+                                }
                             }
                         }
                     )
 
-                    // Right: Empty spacer to keep the shutter perfectly centered
                     Spacer(modifier = Modifier.size(56.dp))
                 }
             }
+
+            // Scanning overlay — rendered above everything while MLKit runs
+            if (isProcessing) {
+                ScanningOverlay()
+            }
         }
     } else {
-        // Fallback UI if permission is denied
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Text("Camera permission is required to use this feature.")
         }
     }
 }
 
+
+
 private fun takePhoto(
     controller: LifecycleCameraController,
     executor: Executor,
     onPhotoTaken: (Uri) -> Unit
 ) {
-    // Create a temporary file to store the image
     val photoFile = File.createTempFile("snapshot_", ".jpg")
     val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
 
