@@ -25,5 +25,9 @@ sealed class NavRoutes(val route: String, val iconRes: Int) : NavKey {
     data object GoogleAuth : NavRoutes("google_auth", 0)
 
     @Serializable
-    data class ObjectResults(val uri: String) : NavRoutes("object_results", 0)
+    data class ObjectResults(
+        val uri: String,
+        val headerText: String? = null,
+        val resultsJson: String? = null
+    ) : NavRoutes("object_results", 0)
 }
