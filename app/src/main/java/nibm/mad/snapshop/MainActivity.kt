@@ -20,19 +20,26 @@ import kotlinx.serialization.json.Json
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
-import nibm.mad.snapshop.data.NavRoutes
-import nibm.mad.snapshop.models.ProductMatch
-import nibm.mad.snapshop.screens.auth.AuthSyncScreen
-import nibm.mad.snapshop.screens.history.HistoryScreen
-import nibm.mad.snapshop.screens.main.MainScreen
-import nibm.mad.snapshop.screens.main.ObjectResultsScreen
-import nibm.mad.snapshop.screens.permissions.CameraPermissionScreen
-import nibm.mad.snapshop.screens.permissions.MediaPermissionScreen
-import nibm.mad.snapshop.screens.settings.SettingsScreen
-import nibm.mad.snapshop.ui.theme.SnapShopTheme
 
 import android.os.Build
 import androidx.core.content.edit
+import androidx.lifecycle.viewmodel.compose.viewModel
+import nibm.mad.snapshop.data.local.AppDatabase
+import nibm.mad.snapshop.data.repository.HistoryRepositoryImpl
+import nibm.mad.snapshop.data.repository.ProductRepositoryImpl
+import nibm.mad.snapshop.domain.model.ProductMatch
+import nibm.mad.snapshop.presentation.navigation.NavRoutes
+import nibm.mad.snapshop.presentation.screens.auth.AuthSyncScreen
+import nibm.mad.snapshop.presentation.screens.history.HistoryScreen
+import nibm.mad.snapshop.presentation.screens.main.MainScreen
+import nibm.mad.snapshop.presentation.screens.main.ObjectResultsScreen
+import nibm.mad.snapshop.presentation.screens.permissions.CameraPermissionScreen
+import nibm.mad.snapshop.presentation.screens.permissions.MediaPermissionScreen
+import nibm.mad.snapshop.presentation.screens.settings.SettingsScreen
+import nibm.mad.snapshop.presentation.theme.SnapShopTheme
+import nibm.mad.snapshop.presentation.viewmodel.HistoryViewModel
+import nibm.mad.snapshop.presentation.viewmodel.MainViewModel
+import nibm.mad.snapshop.presentation.viewmodel.ObjectResultsViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -66,6 +73,11 @@ fun AppNavHost() {
     val initialRoute = if (isFirstRun) NavRoutes.CameraPermission else NavRoutes.Main
     val backStack = rememberNavBackStack(initialRoute)
 
+    // Manual DI
+    val database = remember { AppDatabase.getDatabase(context) }
+    val historyRepository = remember { HistoryRepositoryImpl(database.historyDao()) }
+    val productRepository = remember { ProductRepositoryImpl() }
+
     NavDisplay(
         backStack = backStack,
         modifier = Modifier.fillMaxSize(),
@@ -74,12 +86,16 @@ fun AppNavHost() {
         },
         entryProvider = entryProvider {
             entry<NavRoutes.Main> {
-                MainScreen(onNavigate = { targetKey ->
-                    if (targetKey is NavRoutes.Main) {
-                        backStack.clear()
+                val mainViewModel: MainViewModel = viewModel()
+                MainScreen(
+                    viewModel = mainViewModel,
+                    onNavigate = { targetKey ->
+                        if (targetKey is NavRoutes.Main) {
+                            backStack.clear()
+                        }
+                        backStack.add(targetKey)
                     }
-                    backStack.add(targetKey)
-                })
+                )
             }
 
             entry<NavRoutes.CameraPermission> {
@@ -108,19 +124,27 @@ fun AppNavHost() {
             }
 
             entry<NavRoutes.History> {
-                HistoryScreen(onHistoryItemClick = { entry, matches ->
-                    backStack.add(
-                        NavRoutes.ObjectResults(
-                            uri = entry.imageUrl,
-                            headerText = entry.productName,
-                            resultsJson = Json.encodeToString(matches)
+                val historyViewModel = remember { HistoryViewModel(historyRepository) }
+                HistoryScreen(
+                    viewModel = historyViewModel,
+                    onHistoryItemClick = { entry, matches ->
+                        backStack.add(
+                            NavRoutes.ObjectResults(
+                                uri = entry.imageUrl,
+                                headerText = entry.productName,
+                                resultsJson = Json.encodeToString(matches)
+                            )
                         )
-                    )
-                })
+                    }
+                )
             }
 
             entry<NavRoutes.ObjectResults> { key ->
+                val resultsViewModel = remember { 
+                    ObjectResultsViewModel(productRepository, historyRepository) 
+                }
                 ObjectResultsScreen(
+                    viewModel = resultsViewModel,
                     croppedImageUriString = key.uri,
                     onBackClick = {
                         if (backStack.size > 1) backStack.removeAt(backStack.size - 1)
