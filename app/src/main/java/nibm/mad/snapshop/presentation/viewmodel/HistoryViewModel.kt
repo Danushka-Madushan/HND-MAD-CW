@@ -47,4 +47,10 @@ class HistoryViewModel(
     fun onSearchQueryChange(newQuery: String) {
         _searchQuery.value = newQuery
     }
+
+    fun deleteEntry(entry: HistoryEntry) {
+        viewModelScope.launch {
+            historyRepository.deleteHistory(entry)
+        }
+    }
 }
