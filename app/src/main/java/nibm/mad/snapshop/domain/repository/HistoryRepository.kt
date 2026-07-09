@@ -9,4 +9,5 @@ interface HistoryRepository {
     suspend fun deleteHistory(entry: HistoryEntry)
     suspend fun clearAllHistory()
     fun searchHistory(query: String): Flow<List<HistoryEntry>>
+    suspend fun syncPendingHistory()
 }

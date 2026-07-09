@@ -22,6 +22,8 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -36,13 +38,23 @@ import nibm.mad.snapshop.R
 import nibm.mad.snapshop.presentation.theme.BrandBlue
 import nibm.mad.snapshop.presentation.theme.TextDark
 import nibm.mad.snapshop.presentation.theme.TextSecondary
+import nibm.mad.snapshop.presentation.viewmodel.SettingsViewModel
 
 @Composable
 fun AuthSyncScreen(
+    viewModel: SettingsViewModel,
     onAllowClicked: () -> Unit,
+    onSkipClicked: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    val user by viewModel.currentUser.collectAsState()
+
+    LaunchedEffect(user) {
+        if (user != null) {
+            onAllowClicked()
+        }
+    }
 
     LaunchedEffect(Unit) {
         (context as? ComponentActivity)?.enableEdgeToEdge(
@@ -105,7 +117,7 @@ fun AuthSyncScreen(
             }
 
             Button(
-                onClick = onAllowClicked,
+                onClick = { viewModel.signIn(context) },
                 colors = ButtonDefaults.buttonColors(containerColor = BrandBlue),
                 shape = RoundedCornerShape(34),
                 modifier = Modifier
@@ -132,7 +144,7 @@ fun AuthSyncScreen(
                 }
             }
             Button(
-                onClick = onAllowClicked,
+                onClick = onSkipClicked,
                 colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
                 modifier = Modifier
                     .fillMaxWidth()
@@ -150,8 +162,10 @@ fun AuthSyncScreen(
     }
 }
 
+/*
 @Preview
 @Composable
 fun AuthSyncScreenPreview() {
     AuthSyncScreen({})
 }
+*/

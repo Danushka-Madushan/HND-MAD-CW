@@ -81,7 +81,8 @@ class GeminiQueryDistiller {
 
             client.newCall(request).execute().use { response ->
                 if (!response.isSuccessful) {
-                    Log.e("GeminiDistiller", "API call failed with code: ${response.code}")
+                    val errorBody = response.body?.string()
+                    Log.e("GeminiDistiller", "API call failed with code: ${response.code}, body: $errorBody")
                     return@withContext null
                 }
 

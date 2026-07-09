@@ -25,8 +25,10 @@ import android.os.Build
 import androidx.core.content.edit
 import androidx.lifecycle.viewmodel.compose.viewModel
 import nibm.mad.snapshop.data.local.AppDatabase
+import nibm.mad.snapshop.data.repository.AuthRepositoryImpl
 import nibm.mad.snapshop.data.repository.HistoryRepositoryImpl
 import nibm.mad.snapshop.data.repository.ProductRepositoryImpl
+import nibm.mad.snapshop.data.repository.SettingsRepositoryImpl
 import nibm.mad.snapshop.domain.model.ProductMatch
 import nibm.mad.snapshop.presentation.navigation.NavRoutes
 import nibm.mad.snapshop.presentation.screens.auth.AuthSyncScreen
@@ -40,6 +42,7 @@ import nibm.mad.snapshop.presentation.theme.SnapShopTheme
 import nibm.mad.snapshop.presentation.viewmodel.HistoryViewModel
 import nibm.mad.snapshop.presentation.viewmodel.MainViewModel
 import nibm.mad.snapshop.presentation.viewmodel.ObjectResultsViewModel
+import nibm.mad.snapshop.presentation.viewmodel.SettingsViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -75,7 +78,9 @@ fun AppNavHost() {
 
     // Manual DI
     val database = remember { AppDatabase.getDatabase(context) }
-    val historyRepository = remember { HistoryRepositoryImpl(database.historyDao()) }
+    val authRepository = remember { AuthRepositoryImpl() }
+    val settingsRepository = remember { SettingsRepositoryImpl(context) }
+    val historyRepository = remember { HistoryRepositoryImpl(database.historyDao(), settingsRepository) }
     val productRepository = remember { ProductRepositoryImpl() }
 
     NavDisplay(
@@ -111,16 +116,36 @@ fun AppNavHost() {
             }
 
             entry<NavRoutes.GoogleAuth> {
-                AuthSyncScreen(onAllowClicked = {
-                    sharedPrefs.edit { putBoolean("is_first_run", false) }
-                    isFirstRun = false
-                    backStack.clear()
-                    backStack.add(NavRoutes.Main)
-                })
+                val settingsViewModel = remember { 
+                    SettingsViewModel(authRepository, settingsRepository, historyRepository) 
+                }
+                AuthSyncScreen(
+                    viewModel = settingsViewModel,
+                    onAllowClicked = {
+                        sharedPrefs.edit { putBoolean("is_first_run", false) }
+                        isFirstRun = false
+                        backStack.clear()
+                        backStack.add(NavRoutes.Main)
+                    },
+                    onSkipClicked = {
+                        sharedPrefs.edit { putBoolean("is_first_run", false) }
+                        isFirstRun = false
+                        backStack.clear()
+                        backStack.add(NavRoutes.Main)
+                    }
+                )
             }
 
             entry<NavRoutes.Settings> {
-                SettingsScreen()
+                val settingsViewModel = remember { 
+                    SettingsViewModel(authRepository, settingsRepository, historyRepository) 
+                }
+                SettingsScreen(
+                    viewModel = settingsViewModel,
+                    onBackClick = {
+                        if (backStack.size > 1) backStack.removeAt(backStack.size - 1)
+                    }
+                )
             }
 
             entry<NavRoutes.History> {

@@ -6,7 +6,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import nibm.mad.snapshop.domain.model.HistoryEntry
 
-@Database(entities = [HistoryEntry::class], version = 1, exportSchema = false)
+@Database(entities = [HistoryEntry::class], version = 2, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun historyDao(): HistoryDao
 

@@ -1,6 +1,7 @@
 package nibm.mad.snapshop.presentation.viewmodel
 
 import android.content.Context
+import android.util.Log
 import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -19,6 +20,8 @@ class ObjectResultsViewModel(
     private val productRepository: ProductRepository,
     private val historyRepository: HistoryRepository
 ) : ViewModel() {
+
+    private val TAG = "ObjectResultsVM"
 
     private val _currentStep = MutableStateFlow(SearchStep.IDLE)
     val currentStep: StateFlow<SearchStep> = _currentStep
@@ -52,6 +55,7 @@ class ObjectResultsViewModel(
             )
 
             if (directImageLink != null) {
+                Log.d(TAG, "Image uploaded successfully: $directImageLink")
                 _currentStep.value = SearchStep.SEARCHING
 
                 val productResults = productRepository.searchImage(
@@ -59,6 +63,7 @@ class ObjectResultsViewModel(
                 )
 
                 if (productResults.isNotEmpty()) {
+                    Log.d(TAG, "Found ${productResults.size} products")
                     _foundProductCount.value = productResults.size
                     _currentStep.value = SearchStep.DISTILLING
 
@@ -68,6 +73,7 @@ class ObjectResultsViewModel(
                     val finalDistilledQuery = productRepository.distillQuery(top5Titles)
 
                     if (finalDistilledQuery != null) {
+                        Log.d(TAG, "Query distilled: $finalDistilledQuery")
                         _headerText.value = finalDistilledQuery
                         _productMatches.value = productResults
                         _currentStep.value = SearchStep.SUCCESS
@@ -82,12 +88,15 @@ class ObjectResultsViewModel(
                         historyRepository.insertHistory(historyEntry)
 
                     } else {
+                        Log.e(TAG, "Query distillation failed (returned null)")
                         _currentStep.value = SearchStep.ERROR
                     }
                 } else {
+                    Log.e(TAG, "No products found by SerpApi")
                     _currentStep.value = SearchStep.ERROR
                 }
             } else {
+                Log.e(TAG, "Image upload to ImgBB failed")
                 _currentStep.value = SearchStep.ERROR
             }
         }

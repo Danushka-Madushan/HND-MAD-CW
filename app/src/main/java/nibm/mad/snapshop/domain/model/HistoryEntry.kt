@@ -9,5 +9,6 @@ data class HistoryEntry(
     var productName: String = "",
     var imageUrl: String = "",
     var timestamp: Long = 0L,
-    var resultsJson: String = ""
+    var resultsJson: String = "",
+    var isSynced: Boolean = false
 )
