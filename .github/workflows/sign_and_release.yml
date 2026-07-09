@@ -73,14 +73,14 @@ jobs:
       - name: Rename Signed APK
         id: apk
         run: |
-          OUT="app/build/outputs/apk/release/app-release-${{ steps.version.outputs.name }}.apk"
+          OUT="app/build/outputs/apk/release/snapshop-release-${{ steps.version.outputs.name }}.apk"
           mv "${{ steps.sign_app.outputs.signedReleaseFile }}" "$OUT"
           echo "path=$OUT" >> $GITHUB_OUTPUT
 
       - name: Upload Signed APK
         uses: actions/upload-artifact@v7
         with:
-          name: SnapShop-Signed-Release-${{ steps.version.outputs.name }}
+          name: snapshop-release-${{ steps.version.outputs.name }}
           path: ${{ steps.apk.outputs.path }}
 
       - name: Create GitHub Release
