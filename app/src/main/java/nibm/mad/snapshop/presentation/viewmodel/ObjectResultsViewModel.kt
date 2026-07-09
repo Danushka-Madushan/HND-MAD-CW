@@ -78,10 +78,10 @@ class ObjectResultsViewModel(
                         _productMatches.value = productResults
                         _currentStep.value = SearchStep.SUCCESS
 
-                        // Save to History
+                        // Save to History (using remote URL)
                         val historyEntry = HistoryEntry(
                             productName = finalDistilledQuery,
-                            imageUrl = croppedImageUriString,
+                            imageUrl = directImageLink,
                             timestamp = System.currentTimeMillis(),
                             resultsJson = Json.encodeToString(productResults)
                         )
