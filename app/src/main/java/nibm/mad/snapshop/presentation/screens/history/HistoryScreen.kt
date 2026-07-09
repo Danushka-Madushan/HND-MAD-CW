@@ -151,6 +151,9 @@ fun HistoryScreen(
                         },
                         onViewOffersClick = {
                             onHistoryItemClick(entry, productMatches)
+                        },
+                        onDeleteClick = {
+                            viewModel.deleteEntry(entry)
                         }
                     )
                 }
