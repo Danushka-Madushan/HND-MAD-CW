@@ -234,7 +234,7 @@ fun ObjectResultsContent(
                         ProductOfferItem(
                             product = product,
                             onViewOffersClick = {
-                                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(product.link))
+                                val intent = Intent(Intent.ACTION_VIEW, product.link.toUri())
                                 context.startActivity(intent)
                             }
                         )
