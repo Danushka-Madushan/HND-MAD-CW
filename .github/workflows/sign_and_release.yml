@@ -32,6 +32,9 @@ jobs:
           echo "SERPAPI_API_KEY=${{ secrets.SERPAPI_API_KEY }}" >> local.properties
           echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> local.properties
 
+      - name: Create google-services.json
+        run: echo "${{ secrets.GOOGLE_SERVICES_JSON }}" | base64 --decode > app/google-services.json
+
       - name: Grant Execute Permission for Gradlew
         run: chmod +x gradlew
 
