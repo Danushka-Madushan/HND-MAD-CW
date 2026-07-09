@@ -29,6 +29,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import nibm.mad.snapshop.presentation.theme.LightBlueBg
 
@@ -132,4 +133,10 @@ fun ScanningOverlay() {
             )
         }
     }
+}
+
+@Preview
+@Composable
+fun ScanningOverlayPreview() {
+    ScanningOverlay()
 }

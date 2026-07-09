@@ -3,6 +3,7 @@ package nibm.mad.snapshop.presentation.screens.settings
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -10,8 +11,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Logout
-import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material3.*
+import com.google.firebase.auth.FirebaseUser
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -23,7 +24,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.tooling.preview.Preview
 import nibm.mad.snapshop.presentation.theme.BrandBlue
+import nibm.mad.snapshop.presentation.theme.SnapShopTheme
 import nibm.mad.snapshop.presentation.theme.TextDark
 import nibm.mad.snapshop.presentation.theme.TextSecondary
 import nibm.mad.snapshop.presentation.viewmodel.SettingsViewModel
@@ -228,5 +231,37 @@ fun SettingSwitchItem(
                 uncheckedTrackColor = Color.LightGray
             )
         )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun SettingsScreenPreview() {
+    SnapShopTheme {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.White)
+                .padding(24.dp)
+        ) {
+            Text("Settings Screen Preview", fontWeight = FontWeight.Bold, fontSize = 20.sp, color = TextDark)
+            Spacer(modifier = Modifier.height(16.dp))
+            SettingSwitchItem(
+                title = "Switch over to product search",
+                checked = true,
+                onCheckedChange = {}
+            )
+            SettingSwitchItem(
+                title = "Enable search cache",
+                checked = false,
+                onCheckedChange = {}
+            )
+            SettingSwitchItem(
+                title = "Sync search history",
+                checked = false,
+                onCheckedChange = {},
+                enabled = false
+            )
+        }
     }
 }

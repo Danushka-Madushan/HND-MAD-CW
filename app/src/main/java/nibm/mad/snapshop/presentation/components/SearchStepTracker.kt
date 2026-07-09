@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import nibm.mad.snapshop.presentation.theme.BrandBlue
@@ -166,4 +167,10 @@ fun SearchStepTracker(currentStep: SearchStep, productCount: Int) {
             )
         }
     }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun SearchStepTrackerPreview() {
+    SearchStepTracker(currentStep = SearchStep.SEARCHING, productCount = 5)
 }

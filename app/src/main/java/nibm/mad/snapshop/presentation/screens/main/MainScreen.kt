@@ -59,6 +59,7 @@ import nibm.mad.snapshop.presentation.components.AnimatedShutterButton
 import nibm.mad.snapshop.presentation.components.CameraPermissionRequest
 import nibm.mad.snapshop.presentation.components.ScanningOverlay
 import nibm.mad.snapshop.presentation.navigation.NavRoutes
+import nibm.mad.snapshop.presentation.theme.SnapShopTheme
 import nibm.mad.snapshop.presentation.viewmodel.MainViewModel
 import java.io.File
 import java.util.concurrent.Executor
@@ -334,4 +335,12 @@ private fun takePhoto(
             }
         }
     )
+}
+
+@Preview(showBackground = true)
+@Composable
+fun MainScreenPreview() {
+    SnapShopTheme {
+        MainScreen(viewModel = MainViewModel())
+    }
 }

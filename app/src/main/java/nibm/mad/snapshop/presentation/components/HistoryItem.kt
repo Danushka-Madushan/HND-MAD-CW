@@ -1,7 +1,9 @@
 package nibm.mad.snapshop.presentation.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
@@ -15,9 +17,10 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
+import coil.compose.SubcomposeAsyncImage
 import nibm.mad.snapshop.R
 import nibm.mad.snapshop.domain.model.HistoryEntry
 import nibm.mad.snapshop.presentation.theme.BrandBlue
@@ -52,13 +55,27 @@ fun HistoryItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Thumbnail
-            AsyncImage(
+            SubcomposeAsyncImage(
                 model = entry.imageUrl,
                 contentDescription = entry.productName,
                 modifier = Modifier
                     .size(80.dp)
                     .clip(RoundedCornerShape(12.dp)),
-                contentScale = ContentScale.Crop
+                contentScale = ContentScale.Crop,
+                loading = {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color.LightGray.copy(alpha = 0.3f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(20.dp),
+                            strokeWidth = 2.dp,
+                            color = BrandBlue
+                        )
+                    }
+                }
             )
 
             Spacer(modifier = Modifier.width(12.dp))
@@ -69,7 +86,6 @@ fun HistoryItem(
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.Top
                 ) {
                     Text(
@@ -81,18 +97,6 @@ fun HistoryItem(
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.weight(1f)
                     )
-
-                    IconButton(
-                        onClick = onDeleteClick,
-                        modifier = Modifier.size(24.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Delete,
-                            contentDescription = "Delete",
-                            tint = Color.Red.copy(alpha = 0.6f),
-                            modifier = Modifier.size(18.dp)
-                        )
-                    }
                 }
                 
                 Text(
@@ -103,7 +107,9 @@ fun HistoryItem(
                 )
 
                 Row(
-                    modifier = Modifier.padding(top = 8.dp),
+                    modifier = Modifier
+                        .padding(top = 8.dp)
+                        .fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     IconButton(
@@ -117,9 +123,9 @@ fun HistoryItem(
                             modifier = Modifier.size(20.dp)
                         )
                     }
-                    
+
                     Spacer(modifier = Modifier.width(8.dp))
-                    
+
                     Button(
                         onClick = onViewOffersClick,
                         colors = ButtonDefaults.buttonColors(containerColor = BrandBlue),
@@ -134,8 +140,43 @@ fun HistoryItem(
                             fontWeight = FontWeight.Bold
                         )
                     }
+
+                    Spacer(modifier = Modifier.weight(1f))
+
+                    IconButton(
+                        onClick = onDeleteClick,
+                        modifier = Modifier
+                            .size(32.dp)
+                            .background(Color.Red.copy(alpha = 0.1f), CircleShape)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = "Delete",
+                            tint = Color.Red,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
                 }
             }
         }
     }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun HistoryItemPreview() {
+    HistoryItem(
+        entry = HistoryEntry().apply {
+            id = 1
+            productName = "Sample Product Name that might be long"
+            imageUrl = ""
+            timestamp = System.currentTimeMillis()
+            resultsJson = ""
+            // isSynced = false
+        },
+        onItemClick = {},
+        onShareClick = {},
+        onViewOffersClick = {},
+        onDeleteClick = {}
+    )
 }
