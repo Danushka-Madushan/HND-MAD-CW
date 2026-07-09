@@ -1,7 +1,6 @@
 package nibm.mad.snapshop.presentation.screens.main
 
 import android.content.Intent
-import android.net.Uri
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
