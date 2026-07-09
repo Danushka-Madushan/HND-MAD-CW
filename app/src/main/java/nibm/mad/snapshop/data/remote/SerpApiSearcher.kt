@@ -48,11 +48,13 @@ class SerpApiSearcher {
 
             client.newCall(request).execute().use { response ->
                 if (!response.isSuccessful) {
-                    Log.e("SerpApi", "Request failed with code: ${response.code}")
+                    val errorBody = response.body?.string()
+                    Log.e("SerpApi", "Request failed with code: ${response.code}, body: $errorBody")
                     return@withContext emptyList()
                 }
 
                 val responseString = response.body?.string() ?: return@withContext emptyList()
+                Log.d("SerpApi", "Response: $responseString")
 
                 val jsonElement = Json.parseToJsonElement(responseString).jsonObject
                 val visualMatchesArray = jsonElement["visual_matches"]?.jsonArray ?: return@withContext emptyList()
