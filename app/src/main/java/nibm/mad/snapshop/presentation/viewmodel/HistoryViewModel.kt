@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import nibm.mad.snapshop.domain.model.HistoryEntry
 import nibm.mad.snapshop.domain.repository.HistoryRepository
 
@@ -32,6 +33,16 @@ class HistoryViewModel(
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList()
         )
+
+    init {
+        refreshHistory()
+    }
+
+    fun refreshHistory() {
+        viewModelScope.launch {
+            historyRepository.syncPendingHistory()
+        }
+    }
 
     fun onSearchQueryChange(newQuery: String) {
         _searchQuery.value = newQuery

@@ -67,8 +67,40 @@ class HistoryRepositoryImpl(
     override suspend fun syncPendingHistory() {
         if (!settingsRepository.isSyncEnabled.first()) return
         
+        Log.d(TAG, "Starting pending history sync (upload)")
         val unsynced = historyDao.getAllHistory().first().filter { !it.isSynced }
         unsynced.forEach { syncEntryToFirestore(it) }
+        
+        Log.d(TAG, "Starting history restoration (download)")
+        restoreHistoryFromFirestore()
+    }
+
+    override suspend fun restoreHistoryFromFirestore() {
+        val user = auth.currentUser ?: run {
+            Log.w(TAG, "Restore skipped: No authenticated user")
+            return
+        }
+
+        try {
+            Log.d(TAG, "Fetching history from Firestore for user ${user.uid}")
+            val snapshot = firestore.collection("users")
+                .document(user.uid)
+                .collection("history")
+                .get()
+                .await()
+
+            Log.d(TAG, "Found ${snapshot.documents.size} entries in cloud")
+            for (doc in snapshot.documents) {
+                val entry = doc.toObject(HistoryEntry::class.java)
+                if (entry != null) {
+                    // Ensure it's marked as synced when saved locally
+                    historyDao.insertHistory(entry.copy(isSynced = true))
+                }
+            }
+            Log.d(TAG, "Successfully restored history from Firestore")
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to restore history from Firestore", e)
+        }
     }
 
     private suspend fun syncEntryToFirestore(entry: HistoryEntry) {

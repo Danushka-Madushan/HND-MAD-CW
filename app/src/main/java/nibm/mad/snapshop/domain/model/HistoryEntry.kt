@@ -11,4 +11,7 @@ data class HistoryEntry(
     var timestamp: Long = 0L,
     var resultsJson: String = "",
     var isSynced: Boolean = false
-)
+) {
+    // Empty constructor for Firestore
+    constructor() : this(0, "", "", 0L, "", false)
+}
