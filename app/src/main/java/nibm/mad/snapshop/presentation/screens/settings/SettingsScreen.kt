@@ -9,6 +9,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -104,7 +105,7 @@ fun SettingsScreen(
                         )
                     }
                     IconButton(onClick = { viewModel.signOut() }) {
-                        Icon(Icons.Default.Logout, contentDescription = "Sign Out", tint = Color.Red)
+                        Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = "Sign Out", tint = Color.Red)
                     }
                 }
             } else {
