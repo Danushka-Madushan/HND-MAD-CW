@@ -47,9 +47,14 @@ class ImgBBUploader {
                 .build()
 
             client.newCall(request).execute().use { response ->
-                if (!response.isSuccessful) return@withContext null
+                if (!response.isSuccessful) {
+                    val errorBody = response.body?.string()
+                    android.util.Log.e("ImgBBUploader", "Upload failed: ${response.code}, body: $errorBody")
+                    return@withContext null
+                }
 
                 val responseString = response.body?.string() ?: return@withContext null
+                android.util.Log.d("ImgBBUploader", "Response: $responseString")
 
                 val jsonElement = Json.parseToJsonElement(responseString).jsonObject
                 val dataObject = jsonElement["data"]?.jsonObject
