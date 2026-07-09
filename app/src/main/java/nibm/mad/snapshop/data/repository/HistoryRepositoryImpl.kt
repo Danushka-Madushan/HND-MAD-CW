@@ -89,12 +89,21 @@ class HistoryRepositoryImpl(
                 .get()
                 .await()
 
+            val localHistory = historyDao.getAllHistory().first()
             Log.d(TAG, "Found ${snapshot.documents.size} entries in cloud")
+            
             for (doc in snapshot.documents) {
-                val entry = doc.toObject(HistoryEntry::class.java)
-                if (entry != null) {
-                    // Ensure it's marked as synced when saved locally
-                    historyDao.insertHistory(entry.copy(isSynced = true))
+                val cloudEntry = doc.toObject(HistoryEntry::class.java)
+                if (cloudEntry != null) {
+                    // Check if this entry already exists locally (by timestamp and name to avoid duplicates)
+                    val alreadyExists = localHistory.any { 
+                        it.timestamp == cloudEntry.timestamp && it.productName == cloudEntry.productName 
+                    }
+                    
+                    if (!alreadyExists) {
+                        // Insert as a new local entry (ID will be auto-generated)
+                        historyDao.insertHistory(cloudEntry.copy(id = 0, isSynced = true))
+                    }
                 }
             }
             Log.d(TAG, "Successfully restored history from Firestore")
