@@ -55,11 +55,22 @@ fun ObjectResultsScreen(
         }
     }
     
+    val currentStep by viewModel.currentStep.collectAsState()
+    val headerText by viewModel.headerText.collectAsState()
+    val productMatches by viewModel.productMatches.collectAsState()
+    val foundProductCount by viewModel.foundProductCount.collectAsState()
+
     ObjectResultsContent(
-        viewModel = viewModel,
+        currentStep = currentStep,
+        headerText = headerText,
+        productMatches = productMatches,
+        foundProductCount = foundProductCount,
         croppedImageUriString = croppedImageUriString,
         isVisible = isVisible,
-        onBackClick = onBackClick
+        onBackClick = onBackClick,
+        onRetrySearch = { context ->
+            viewModel.startSearch(context, croppedImageUriString)
+        }
     )
 }
 
@@ -68,55 +79,34 @@ fun ObjectResultsScreen(
 fun ObjectResultsScreenPreview() {
     SnapShopTheme {
         ObjectResultsContent(
-            viewModel = ObjectResultsViewModel(
-                productRepository = nibm.mad.snapshop.data.repository.ProductRepositoryImpl(),
-                historyRepository = nibm.mad.snapshop.data.repository.HistoryRepositoryImpl(
-                    historyDao = object : nibm.mad.snapshop.data.local.HistoryDao {
-                        override fun getAllHistory() = kotlinx.coroutines.flow.flowOf(emptyList<nibm.mad.snapshop.domain.model.HistoryEntry>())
-                        override suspend fun insertHistory(entry: nibm.mad.snapshop.domain.model.HistoryEntry) = 0L
-                        override suspend fun deleteHistory(entry: nibm.mad.snapshop.domain.model.HistoryEntry) {}
-                        override suspend fun clearAllHistory() {}
-                        override fun searchHistory(query: String) = kotlinx.coroutines.flow.flowOf(emptyList<nibm.mad.snapshop.domain.model.HistoryEntry>())
-                    },
-                    settingsRepository = object : nibm.mad.snapshop.domain.repository.SettingsRepository {
-                        override val isProductSearchEnabled = kotlinx.coroutines.flow.MutableStateFlow(false)
-                        override val isSearchCacheEnabled = kotlinx.coroutines.flow.MutableStateFlow(false)
-                        override val isSyncEnabled = kotlinx.coroutines.flow.MutableStateFlow(false)
-                        override fun setProductSearchEnabled(enabled: Boolean) {}
-                        override fun setSearchCacheEnabled(enabled: Boolean) {}
-                        override fun setSyncEnabled(enabled: Boolean) {}
-                    }
-                )
-            ).apply {
-                initFromHistory(
-                    headerText = "Sample Product",
-                    results = listOf(
-                        ProductMatch("Amazon Offer", "https://amazon.com", "Amazon", ""),
-                        ProductMatch("eBay Offer", "https://ebay.com", "eBay", "")
-                    )
-                )
-            },
+            currentStep = SearchStep.SUCCESS,
+            headerText = "Sample Product",
+            productMatches = listOf(
+                ProductMatch("Amazon Offer", "https://amazon.com", "Amazon", ""),
+                ProductMatch("eBay Offer", "https://ebay.com", "eBay", "")
+            ),
+            foundProductCount = 2,
             croppedImageUriString = "",
             isVisible = true,
-            onBackClick = {}
+            onBackClick = {},
+            onRetrySearch = {}
         )
     }
 }
 
 @Composable
 fun ObjectResultsContent(
-    viewModel: ObjectResultsViewModel,
+    currentStep: SearchStep,
+    headerText: String,
+    productMatches: List<ProductMatch>,
+    foundProductCount: Int,
     croppedImageUriString: String,
     isVisible: Boolean,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    onRetrySearch: (android.content.Context) -> Unit
 ) {
     val context = LocalContext.current
     
-    val currentStep by viewModel.currentStep.collectAsState()
-    val headerText by viewModel.headerText.collectAsState()
-    val productMatches by viewModel.productMatches.collectAsState()
-    val foundProductCount by viewModel.foundProductCount.collectAsState()
-
     LaunchedEffect(Unit) {
         (context as? ComponentActivity)?.enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.light(
@@ -314,7 +304,7 @@ fun ObjectResultsContent(
 
                     Button(
                         onClick = {
-                            viewModel.startSearch(context, croppedImageUriString)
+                            onRetrySearch(context)
                         },
                         enabled = currentStep == SearchStep.IDLE || currentStep == SearchStep.ERROR,
                         colors  = ButtonDefaults.buttonColors(

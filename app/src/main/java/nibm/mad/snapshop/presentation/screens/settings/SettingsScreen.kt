@@ -3,7 +3,6 @@ package nibm.mad.snapshop.presentation.screens.settings
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -12,7 +11,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material3.*
-import com.google.firebase.auth.FirebaseUser
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -31,7 +29,6 @@ import nibm.mad.snapshop.presentation.theme.TextDark
 import nibm.mad.snapshop.presentation.theme.TextSecondary
 import nibm.mad.snapshop.presentation.viewmodel.SettingsViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     viewModel: SettingsViewModel,
@@ -40,11 +37,37 @@ fun SettingsScreen(
 ) {
     val context = LocalContext.current
     val user by viewModel.currentUser.collectAsState()
-    val isProductSearchEnabled by viewModel.isProductSearchEnabled.collectAsState()
-    val isSearchCacheEnabled by viewModel.isSearchCacheEnabled.collectAsState()
     val isSyncEnabled by viewModel.isSyncEnabled.collectAsState()
     val syncInProgress by viewModel.syncInProgress.collectAsState()
 
+    SettingsContent(
+        user = user,
+        isSyncEnabled = isSyncEnabled,
+        syncInProgress = syncInProgress,
+        onBackClick = onBackClick,
+        onSignOut = { viewModel.signOut() },
+        onSignIn = { viewModel.signIn(context) },
+        onToggleSync = { viewModel.toggleSync(it) },
+        onSyncNow = { viewModel.syncHistory() },
+        modifier = modifier
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SettingsContent(
+    user: com.google.firebase.auth.FirebaseUser?,
+    isSyncEnabled: Boolean,
+    syncInProgress: Boolean,
+    onBackClick: () -> Unit,
+    onSignOut: () -> Unit,
+    onSignIn: () -> Unit,
+    onToggleSync: (Boolean) -> Unit,
+    onSyncNow: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val context = LocalContext.current
+    
     LaunchedEffect(Unit) {
         (context as? ComponentActivity)?.enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.light(
@@ -96,24 +119,24 @@ fun SettingsScreen(
                 ) {
                     Column {
                         Text(
-                            text = user?.displayName ?: "Signed In",
+                            text = user.displayName ?: "Signed In",
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Medium,
                             color = TextDark
                         )
                         Text(
-                            text = user?.email ?: "",
+                            text = user.email ?: "",
                             fontSize = 14.sp,
                             color = TextSecondary
                         )
                     }
-                    IconButton(onClick = { viewModel.signOut() }) {
+                    IconButton(onClick = onSignOut) {
                         Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = "Sign Out", tint = Color.Red)
                     }
                 }
             } else {
                 Button(
-                    onClick = { viewModel.signIn(context) },
+                    onClick = onSignIn,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(56.dp)
@@ -124,29 +147,6 @@ fun SettingsScreen(
                     Text("Sign In with Google", color = Color.White, fontWeight = FontWeight.SemiBold)
                 }
             }
-
-            HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp), thickness = 0.5.dp)
-
-            // General Settings
-            Text(
-                "General",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = TextDark,
-                modifier = Modifier.padding(vertical = 12.dp)
-            )
-
-            SettingSwitchItem(
-                title = "Switch over to product search",
-                checked = isProductSearchEnabled,
-                onCheckedChange = { viewModel.toggleProductSearch(it) }
-            )
-
-            SettingSwitchItem(
-                title = "Enable search cache",
-                checked = isSearchCacheEnabled,
-                onCheckedChange = { viewModel.toggleSearchCache(it) }
-            )
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp), thickness = 0.5.dp)
 
@@ -162,13 +162,13 @@ fun SettingsScreen(
             SettingSwitchItem(
                 title = "Sync search history",
                 checked = isSyncEnabled,
-                onCheckedChange = { viewModel.toggleSync(it) },
+                onCheckedChange = onToggleSync,
                 enabled = user != null
             )
 
             if (isSyncEnabled && user != null) {
                 Button(
-                    onClick = { viewModel.syncHistory() },
+                    onClick = onSyncNow,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 8.dp),
@@ -238,30 +238,15 @@ fun SettingSwitchItem(
 @Composable
 fun SettingsScreenPreview() {
     SnapShopTheme {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.White)
-                .padding(24.dp)
-        ) {
-            Text("Settings Screen Preview", fontWeight = FontWeight.Bold, fontSize = 20.sp, color = TextDark)
-            Spacer(modifier = Modifier.height(16.dp))
-            SettingSwitchItem(
-                title = "Switch over to product search",
-                checked = true,
-                onCheckedChange = {}
-            )
-            SettingSwitchItem(
-                title = "Enable search cache",
-                checked = false,
-                onCheckedChange = {}
-            )
-            SettingSwitchItem(
-                title = "Sync search history",
-                checked = false,
-                onCheckedChange = {},
-                enabled = false
-            )
-        }
+        SettingsContent(
+            user = null,
+            isSyncEnabled = false,
+            syncInProgress = false,
+            onBackClick = {},
+            onSignOut = {},
+            onSignIn = {},
+            onToggleSync = {},
+            onSyncNow = {}
+        )
     }
 }

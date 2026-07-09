@@ -28,21 +28,36 @@ import nibm.mad.snapshop.presentation.components.HistoryItem
 import nibm.mad.snapshop.presentation.theme.BrandBlue
 import androidx.compose.ui.tooling.preview.Preview
 import nibm.mad.snapshop.presentation.theme.SnapShopTheme
-import nibm.mad.snapshop.presentation.theme.SnapShopTheme
 import nibm.mad.snapshop.presentation.theme.TextDark
 import nibm.mad.snapshop.presentation.viewmodel.HistoryViewModel
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
 
 @Composable
 fun HistoryScreen(
     viewModel: HistoryViewModel,
     onHistoryItemClick: (HistoryEntry, List<ProductMatch>) -> Unit
 ) {
-    val context = LocalContext.current
     val searchQuery by viewModel.searchQuery.collectAsState()
     val historyList by viewModel.historyList.collectAsState()
 
+    HistoryContent(
+        searchQuery = searchQuery,
+        historyList = historyList,
+        onSearchQueryChange = { viewModel.onSearchQueryChange(it) },
+        onDeleteEntry = { viewModel.deleteEntry(it) },
+        onHistoryItemClick = onHistoryItemClick
+    )
+}
+
+@Composable
+fun HistoryContent(
+    searchQuery: String,
+    historyList: List<HistoryEntry>,
+    onSearchQueryChange: (String) -> Unit,
+    onDeleteEntry: (HistoryEntry) -> Unit,
+    onHistoryItemClick: (HistoryEntry, List<ProductMatch>) -> Unit
+) {
+    val context = LocalContext.current
+    
     LaunchedEffect(Unit) {
         (context as? ComponentActivity)?.enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.light(
@@ -70,7 +85,7 @@ fun HistoryScreen(
         ) {
             TextField(
                 value = searchQuery,
-                onValueChange = { viewModel.onSearchQueryChange(it) },
+                onValueChange = onSearchQueryChange,
                 modifier = Modifier
                     .weight(1f)
                     .height(56.dp),
@@ -156,7 +171,7 @@ fun HistoryScreen(
                             onHistoryItemClick(entry, productMatches)
                         },
                         onDeleteClick = {
-                            viewModel.deleteEntry(entry)
+                            onDeleteEntry(entry)
                         }
                     )
                 }
@@ -168,24 +183,15 @@ fun HistoryScreen(
 @Preview(showBackground = true)
 @Composable
 fun HistoryScreenPreview() {
-    val mockHistoryRepository = object : nibm.mad.snapshop.domain.repository.HistoryRepository {
-        override fun getAllHistory(): Flow<List<HistoryEntry>> = flowOf(
-            listOf(
+    SnapShopTheme {
+        HistoryContent(
+            searchQuery = "",
+            historyList = listOf(
                 HistoryEntry(id = 1, productName = "Item 1", timestamp = System.currentTimeMillis()),
                 HistoryEntry(id = 2, productName = "Item 2", timestamp = System.currentTimeMillis())
-            )
-        )
-        override suspend fun insertHistory(entry: HistoryEntry) {}
-        override suspend fun deleteHistory(entry: HistoryEntry) {}
-        override suspend fun clearAllHistory() {}
-        override fun searchHistory(query: String): Flow<List<HistoryEntry>> = flowOf(emptyList())
-        override suspend fun syncPendingHistory() {}
-        override suspend fun restoreHistoryFromFirestore() {}
-    }
-
-    SnapShopTheme {
-        HistoryScreen(
-            viewModel = HistoryViewModel(mockHistoryRepository),
+            ),
+            onSearchQueryChange = {},
+            onDeleteEntry = {},
             onHistoryItemClick = { _, _ -> }
         )
     }

@@ -70,11 +70,31 @@ fun MainScreen(
     onNavigate: (NavRoutes) -> Unit = {}
 ) {
     val context = LocalContext.current
-    val lifecycleOwner = LocalLifecycleOwner.current
-    val isInspection = LocalInspectionMode.current
-
     val isProcessing by viewModel.isProcessing.collectAsState()
     val isFlashOn by viewModel.isFlashOn.collectAsState()
+
+    MainContent(
+        isProcessing = isProcessing,
+        isFlashOn = isFlashOn,
+        onToggleFlash = { viewModel.toggleFlash() },
+        onProcessImage = { uri, onProcessed, onError ->
+            viewModel.processImage(context, uri, onProcessed, onError)
+        },
+        onNavigate = onNavigate
+    )
+}
+
+@Composable
+fun MainContent(
+    isProcessing: Boolean,
+    isFlashOn: Boolean,
+    onToggleFlash: () -> Unit,
+    onProcessImage: (Uri, (Uri) -> Unit, () -> Unit) -> Unit,
+    onNavigate: (NavRoutes) -> Unit
+) {
+    val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val isInspection = LocalInspectionMode.current
 
     var hasCameraPermission by remember {
         mutableStateOf(
@@ -92,13 +112,12 @@ fun MainScreen(
         contract = ActivityResultContracts.PickVisualMedia(),
         onResult = { uri ->
             if (uri != null) {
-                viewModel.processImage(
-                    context = context,
-                    uri = uri,
-                    onProcessed = { croppedUri ->
+                onProcessImage(
+                    uri,
+                    { croppedUri ->
                         onNavigate(NavRoutes.ObjectResults(croppedUri.toString()))
                     },
-                    onError = {
+                    {
                         Log.e("ML_KIT", "No prominent object found to crop.")
                     }
                 )
@@ -199,7 +218,7 @@ fun MainScreen(
                     }
 
                     IconButton(
-                        onClick = { viewModel.toggleFlash() },
+                        onClick = onToggleFlash,
                         enabled = !isProcessing,
                         modifier = Modifier
                             .size(32.dp)
@@ -279,13 +298,12 @@ fun MainScreen(
                                         controller = controller,
                                         executor = ContextCompat.getMainExecutor(context),
                                         onPhotoTaken = { uri ->
-                                            viewModel.processImage(
-                                                context = context,
-                                                uri = uri,
-                                                onProcessed = { croppedUri ->
+                                            onProcessImage(
+                                                uri,
+                                                { croppedUri ->
                                                     onNavigate(NavRoutes.ObjectResults(croppedUri.toString()))
                                                 },
-                                                onError = {
+                                                {
                                                     Log.e("ML_KIT", "No prominent object found to crop.")
                                                 }
                                             )
@@ -341,6 +359,12 @@ private fun takePhoto(
 @Composable
 fun MainScreenPreview() {
     SnapShopTheme {
-        MainScreen(viewModel = MainViewModel())
+        MainContent(
+            isProcessing = false,
+            isFlashOn = false,
+            onToggleFlash = {},
+            onProcessImage = { _, _, _ -> },
+            onNavigate = {}
+        )
     }
 }
